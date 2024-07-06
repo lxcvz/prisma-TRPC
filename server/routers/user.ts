@@ -1,17 +1,23 @@
 import { z } from "zod";
 import { procedure, router } from "../trpc";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export const userRouter = router({
   addUser: procedure
-    .input(z.object({ name: z.string(), age: z.number() }))
-    .mutation((opts) => {
+    .input(z.object({ name: z.string(), race: z.string() }))
+    .mutation(async (opts) => {
       const { input } = opts;
-      // TODO Call prisma add user method
+
+      await prisma.user.create({
+        data: {
+          name: input.name,
+          race: input.race,
+        },
+      });
     }),
-  getUsers: procedure.query(() => {
-    return [
-      { name: "Lucas", age: 24 },
-      { name: "mateus", age: 23 },
-    ];
+  getUsers: procedure.query(async () => {
+    return await prisma.user.findMany();
   }),
 });
